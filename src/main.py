@@ -13,22 +13,6 @@ ABLETON_VERSIONS = {
     "11.2.11": "11.0_11202"
 }
 
-# Arguments parser
-parser = argparse.ArgumentParser(description="Script to change an Ableton project version")
-parser.add_argument(
-    "als_file", type=str,
-    help="Relative or absolute path to Ableton project '.als' file."
-         "It's been tested only with Ableton 10.0.5 and 11.2.11 projects."
-)
-parser.add_argument(
-    "ableton_version_to_set", type=str, help="Version of Ableton that you would like the '.als' file to be set."
-)
-parser.add_argument(
-    "--xml", action="store_true", default=False,
-    help="If set, it does not remove the .xml file from the '.als' once created."
-)
-args = parser.parse_args()
-
 
 def add_als_extension_if_it_is_not_set(als_file: str) -> str:
     """
@@ -37,11 +21,6 @@ def add_als_extension_if_it_is_not_set(als_file: str) -> str:
     :return: the file with the correct extension
     """
     return als_file if als_file.endswith(".als") else f"{als_file}.als"
-
-
-ALS_FILE = add_als_extension_if_it_is_not_set(args.als_file)
-ABLETON_VERSION = args.ableton_version_to_set
-XML = args.xml
 
 
 def extract_xml_from_ableton_project(als_file: str) -> ET.ElementTree:
@@ -53,12 +32,12 @@ def extract_xml_from_ableton_project(als_file: str) -> ET.ElementTree:
     if os.path.isfile(als_file):
         with open(als_file, 'rb') as project_compressed:
             if not binascii.hexlify(project_compressed.read(2)) == b'1f8b':
-                raise Exception("Nothing to do here")
+                raise Exception("Nothing to do here.\n")
         with gzip.open(als_file, 'rb') as project_uncompressed:
             project_xml_string = project_uncompressed.read().decode("utf-8")
             return ET.ElementTree(ET.fromstring(project_xml_string))
     else:
-        raise FileNotFoundError(f"The Ableton project {als_file} does not exist")
+        raise FileNotFoundError(f"The Ableton project {als_file} does not exist.\n")
 
 
 def change_version(ableton_project_tree: ET.ElementTree, ableton_version: str) -> typing.NoReturn:
@@ -71,7 +50,8 @@ def change_version(ableton_project_tree: ET.ElementTree, ableton_version: str) -
     tree_header = ableton_project_tree.getroot()
     if ableton_version not in ABLETON_VERSIONS:
         raise Exception(
-            f"Version '{ableton_version}' is not valid. Please select one among the following: {ABLETON_VERSIONS}"
+            f"Version '{ableton_version}' is not valid. "
+            f"Please select one among the following: {ABLETON_VERSIONS.keys()}\n"
         )
     else:
         tree_header.set("MinorVersion", ABLETON_VERSIONS[ableton_version])
@@ -105,13 +85,42 @@ def generate_als(als_file: str, ableton_project_tree: ET.ElementTree, remove_xml
         with open(als_file, "wb") as f_out1:
             with gzip.GzipFile(als_xml, "wb", fileobj=f_out1) as f_out2:
                 shutil.copyfileobj(f_in, f_out2)
-    print(f"New Ableton project created in '{als_file}'")
+    print(f"New Ableton project created in '{als_file}'!\n")
     if remove_xml:
-        print(f"Removed XML '{als_xml}'")
+        print(f"Removed XML '{als_xml}'.\n")
         os.remove(als_xml)
 
 
+def run_script(als_file: str, ableton_version: str, remove_xml: bool = True):
+    """
+    Run the main script for this repository
+    :param als_file: relative or absolute path to Ableton project ".als" file
+    :param ableton_version: the version you would like your Ableton project to be in
+    :param remove_xml:
+    :return:
+    """
+    ableton_xml = extract_xml_from_ableton_project(als_file)
+    change_version(ableton_xml, ableton_version)
+    generate_als(als_file, ableton_xml, remove_xml)
+
+
 if __name__ == "__main__":
-    ableton_xml = extract_xml_from_ableton_project(ALS_FILE)
-    change_version(ableton_xml, ABLETON_VERSION)
-    generate_als(ALS_FILE, ableton_xml, not XML)
+    # Arguments parser
+    parser = argparse.ArgumentParser(description="Script to change an Ableton project version")
+    parser.add_argument(
+        "als_file", type=str,
+        help="Relative or absolute path to Ableton project '.als' file."
+             "It's been tested only with Ableton 10.0.5 and 11.2.11 projects."
+    )
+    parser.add_argument(
+        "ableton_version_to_set", type=str, help="Version of Ableton that you would like the '.als' file to be set."
+    )
+    parser.add_argument(
+        "--xml", action="store_true", default=False,
+        help="If set, it does not remove the .xml file from the '.als' once created."
+    )
+    args = parser.parse_args()
+    als_file = add_als_extension_if_it_is_not_set(args.als_file)
+    ableton_version = args.ableton_version_to_set
+    xml = args.xml
+    run_script(als_file, ableton_version, not xml)
