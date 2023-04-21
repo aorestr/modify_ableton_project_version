@@ -111,7 +111,18 @@ def generate_als(als_file: str, ableton_project_tree: ET.ElementTree, remove_xml
         os.remove(als_xml)
 
 
+def run_script(als_file: str, ableton_version: str, remove_xml: bool = True):
+    """
+    Run the main script for this repository
+    :param als_file: relative or absolute path to Ableton project ".als" file
+    :param ableton_version: the version you would like your Ableton project to be in
+    :param remove_xml:
+    :return:
+    """
+    ableton_xml = extract_xml_from_ableton_project(als_file)
+    change_version(ableton_xml, ableton_version)
+    generate_als(als_file, ableton_xml, remove_xml)
+
+
 if __name__ == "__main__":
-    ableton_xml = extract_xml_from_ableton_project(ALS_FILE)
-    change_version(ableton_xml, ABLETON_VERSION)
-    generate_als(ALS_FILE, ableton_xml, not XML)
+    run_script(ALS_FILE, ABLETON_VERSION, not XML)
