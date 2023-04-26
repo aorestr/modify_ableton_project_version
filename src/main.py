@@ -119,8 +119,10 @@ if __name__ == "__main__":
         "--xml", action="store_true", default=False,
         help="If set, it does not remove the .xml file from the '.als' once created."
     )
+    # Save arguments
     args = parser.parse_args()
     als_file = add_als_extension_if_it_is_not_set(args.als_file)
     ableton_version = args.ableton_version_to_set
     xml = args.xml
+    # Run script
     run_script(als_file, ableton_version, not xml)
