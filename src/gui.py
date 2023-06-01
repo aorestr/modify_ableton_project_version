@@ -1,12 +1,15 @@
 import PySimpleGUI as sg
-from main import run_script
+from main import run_script, ABLETON_VERSIONS
 
 FONT = font = ("Arial", 12)
 sg.theme("DarkAmber")
 
 # Rows
-als_row = [sg.Text("Select Ableton '.als' file: ", size=(20, 1)), sg.InputText(key="-ALS-"), sg.FileBrowse()]
-version_row = [sg.Text("Select Ableton version: ", size=(20, 1)), sg.InputText(key="-VERSION-")]
+als_row = [sg.Text("Select Ableton '.als' file: ", size=(20, 1)), sg.InputText(size=(20, 1), key="-ALS-"), sg.FileBrowse()]
+version_row = [
+    sg.Text("Select Ableton version: ", size=(20, 1)),
+    sg.Combo(list(ABLETON_VERSIONS), expand_x=True, enable_events=True, readonly=False, key="-VERSION-")
+]
 buttons_row = [sg.Button("Run"), sg.Button("Cancel")]
 xml_row = [sg.Checkbox("Removed XML file after extraction?", key="-XML-", default=True)]
 output_row = [sg.Output(size=(40, 7), key="-OUTPUT-")]

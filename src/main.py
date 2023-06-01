@@ -9,6 +9,7 @@ import xml.etree.ElementTree as ET
 
 
 ABLETON_VERSIONS = {
+    "10.1.1": "10.0_377",
     "11.0.5": "11.0_433",
     "11.2.11": "11.0_11202"
 }
@@ -110,7 +111,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "als_file", type=str,
         help="Relative or absolute path to Ableton project '.als' file."
-             "It's been tested only with Ableton 10.0.5 and 11.2.11 projects."
+             "It's been tested only with Ableton 10.1.1, 11.0.5 and 11.2.11 projects."
     )
     parser.add_argument(
         "ableton_version_to_set", type=str, help="Version of Ableton that you would like the '.als' file to be set."
