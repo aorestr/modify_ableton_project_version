@@ -9,9 +9,10 @@ import xml.etree.ElementTree as ET
 
 
 ABLETON_VERSIONS = {
-    "10.1.1": "10.0_377",
-    "11.0.5": "11.0_433",
-    "11.2.11": "11.0_11202"
+    "10.1.1": ["10.0_377", "9f777dfa870b2c699111a658568064e08b433ab7"],
+    "11.0.5": ["11.0_433", "fd7c279479b26464e8dc6075fe9b03f275da259a"],
+    "11.2.11": ["11.0_11202", "6e9e7c6913378fcbbe8b18e3fd8f33d0755968b8"],
+    "11.3.2": ["11.0_11300", "e3d052445ac61b8edfeb9cc35685d30807f93f8d"]
 }
 
 
@@ -55,7 +56,8 @@ def change_version(ableton_project_tree: ET.ElementTree, ableton_version: str) -
             f"Please select one among the following: {ABLETON_VERSIONS.keys()}\n"
         )
     else:
-        tree_header.set("MinorVersion", ABLETON_VERSIONS[ableton_version])
+        tree_header.set("MinorVersion", ABLETON_VERSIONS[ableton_version][0])
+        tree_header.set("Revision", ABLETON_VERSIONS[ableton_version][1])
         tree_header.set("Creator", f"Ableton Live {ableton_version}")
 
 
@@ -117,13 +119,21 @@ if __name__ == "__main__":
         "ableton_version_to_set", type=str, help="Version of Ableton that you would like the '.als' file to be set."
     )
     parser.add_argument(
-        "--xml", action="store_true", default=False,
+        "--postxml", action="store_true", default=False,
         help="If set, it does not remove the .xml file from the '.als' once created."
+    )
+    parser.add_argument(
+        "--prexml", action="store_true", default=False,
+        help="If set, it does not run the program, it just extract the .xml from the '.als'."
     )
     # Save arguments
     args = parser.parse_args()
     als_file = add_als_extension_if_it_is_not_set(args.als_file)
     ableton_version = args.ableton_version_to_set
-    xml = args.xml
+    prexml = args.prexml
+    postxml = args.postxml
     # Run script
-    run_script(als_file, ableton_version, not xml)
+    if prexml:
+        create_ableton_xml_file(als_file, extract_xml_from_ableton_project(als_file))
+    else:
+        run_script(als_file, ableton_version, not postxml)
